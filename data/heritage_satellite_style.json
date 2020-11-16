@@ -1,95 +1,220 @@
 {
-    "version": 8,
-    "name": "Heritage Satellite Style",
-    "metadata": {
-      "maputnik:renderer": "mbgljs"
+  "version": 8,
+  "name": "Heritage Satellite Style",
+  "metadata": {
+    "maputnik:renderer": "mbgljs"
+  },
+  "center": [
+    -104.9201,
+    39.7107
+  ],
+  "zoom": 11,
+  "sources": {
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiYnJhZGxleTIzODciLCJhIjoiY2pnMTk0ZTk2NmJzOTJxbnZpMjl1ZGsxbiJ9.L-BSY_VjUrkHL3ov0OciKQ"
+      ],
+      "tilesize": 512
     },
-    "center": [
-      -104.9201,
-      39.7107
-    ],
-    "zoom": 11,
-    "sources": {
-      "satellite": {
-        "type": "raster",
-        "tiles": [
-            "https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiYnJhZGxleTIzODciLCJhIjoiY2pnMTk0ZTk2NmJzOTJxbnZpMjl1ZGsxbiJ9.L-BSY_VjUrkHL3ov0OciKQ"      ],
-        "tilesize": 512
-      },
-      "heritage_data": {
-        "type": "vector",
-        "tiles": [
-          "http://localhost:3001/heritage_data/{z}/{x}/{y}.pbf"
-        ],
-        "minzoom": 0,
-        "maxzoom": 14
+    "heritage_data": {
+      "type": "vector",
+      "tiles": [
+        "https://tilehut.herokuapp.com/heritage_data/{z}/{x}/{y}.pbf"
+      ],
+      "minzoom": 0,
+      "maxzoom": 14
+    },
+    "points": {
+      "type": "geojson",
+      "data": {"type": "FeatureCollection", "features": []},
+      "promoteId": "id"
+    }
+  },
+  "sprite": "https://tilehut.herokuapp.com/sprite/sprite_heritage",
+  "glyphs": "https://orangemug.github.io/font-glyphs/glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "satellite",
+      "type": "raster",
+      "source": "satellite",
+      "layout": {
+        "visibility": "visible"
       }
     },
-    "sprite": "http://localhost:3001/sprite/sprite_heritage",
-    "glyphs": "https://orangemug.github.io/font-glyphs/glyphs/{fontstack}/{range}.pbf",
-    "layers": [
-      {
-        "id": "satellite",
-        "type": "raster",
-        "source": "satellite",
-        "layout": {
-          "visibility": "visible"
-        }
+    {
+      "id": "heritage_parcels_fill",
+      "type": "fill",
+      "source": "heritage_data",
+      "source-layer": "heritage_parcels",
+      "layout": {
+        "visibility": "visible"
       },
-
-      {
-        "id": "heritage_parcels_fill",
-        "type": "fill",
-        "source": "heritage_data",
-        "source-layer": "heritage_parcels",
-        "layout": {"visibility": "visible"},
-        "paint": {
-          "fill-antialias": true,
-          "fill-color": "#627BC1",
-          "fill-opacity":  [
-            "case",
-            ["boolean", ["feature-state", "highlight"], false],
-            0.5,
-            0
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": "#627BC1",
+        "fill-opacity": [
+          "case",
+          [
+            "boolean",
+            [
+              "feature-state",
+              "highlight"
+            ],
+            false
+          ],
+          0.5,
+          0
+        ]
+      }
+    },
+    {
+      "id": "heritage_parcels_line",
+      "type": "line",
+      "source": "heritage_data",
+      "source-layer": "heritage_parcels",
+      "filter": [
+        "!",
+        [
+          "in",
+          [
+            "get",
+            "objectid"
+          ],
+          [
+            "literal",
+            [
+              5302,
+              5615,
+              5301,
+              5536,
+              5576,
+              5300,
+              5608,
+              5329,
+              5303
             ]
-        }
+          ]
+        ]
+      ],
+      "minzoom": 14.5,
+      "maxzoom": 22,
+      "layout": {
+        "visibility": "visible"
       },
-      {
-        "id": "heritage_parcels_line",
-        "type": "line",
-        "source": "heritage_data",
-        "source-layer": "heritage_parcels",
-        "filter":["!",["in", ["get", "objectid"], ["literal",[5302,5615,5301,5536,5576,5300,5608,5329,5303]]]],
-        "minzoom": 14.5,
-        "maxzoom": 22,
-        "layout": {"visibility": "visible"},
-        "paint": {
-          "line-color": "rgba(249, 249, 249, 1)",
-          "line-width": ["interpolate", ["linear"], ["zoom"], 15, 0.6, 20, 3],
-          "line-opacity": 0.7
-        }
-      },
-      {
-        "id": "heritage_address_num",
-        "type": "symbol",
-        "source": "heritage_data",
-        "source-layer": "heritage_address_num",
-        "minzoom": 17,
-        "filter": ["==", "$type", "Point"],
-        "layout": {
-          "text-field": "{address_num}",
-          "text-font": ["Noto Sans Bold"],
-          "text-size": 10
-        },
-        "paint": { 
-            "text-color": "#fff",
-          "text-halo-blur": 1,
-          "text-halo-color": "black",
-          "text-halo-width": 1
-        }
+      "paint": {
+        "line-color": "rgba(249, 249, 249, 1)",
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          15,
+          0.6,
+          20,
+          3
+        ],
+        "line-opacity": 0.7
       }
-    ],
-    "symbol-z-order": "source",
-    "id": "satellite",
-    "owner": "Jeffrey"
-  }
+    },
+
+    {
+      "id": "heritage_buildings-3d",
+      "type": "fill",
+      "source": "heritage_data",
+      "source-layer": "heritage_buildings",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "rgba(222, 211, 190, 0)",
+        "fill-opacity": 0
+      }
+    },
+
+    {
+      "id": "heritage_address_num",
+      "type": "symbol",
+      "source": "heritage_data",
+      "source-layer": "heritage_address_num",
+      "minzoom": 17,
+      "filter": [
+        "==",
+        "$type",
+        "Point"
+      ],
+      "layout": {
+        "visibility": "visible",
+        "text-field": "{address_num}",
+        "text-font": [
+          "Noto Sans Bold"
+        ],
+        "text-size": 10
+      },
+      "paint": {
+        "text-color": "#fff",
+        "text-halo-blur": 1,
+        "text-halo-color": "black",
+        "text-halo-width": 1
+      }
+    },
+    {
+      "id": "points",
+      "type": "symbol",
+      "source": "points",
+      "layout": {
+        "icon-image": [
+          "match",
+          ["get", "category"],
+          "Violation",
+          "home_pin_red",
+          "home_pin"
+        ],
+        "icon-anchor": "bottom",
+        "icon-size": ["interpolate", ["linear"], ["zoom"], 15, 1, 18, 1],
+        "icon-ignore-placement": false,
+        "icon-allow-overlap": true,
+        "visibility": "visible"
+      }
+    },
+    {
+      "id": "points_label",
+      "type": "symbol",
+      "source": "points",
+      "layout": {
+        "text-field": ["get", "note"],
+        "text-font": ["Noto Sans Regular"],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 15, 10, 18, 12],
+        "text-variable-anchor": ["top", "bottom", "left", "right"],
+        "text-letter-spacing": 0.05,
+        "text-justify": "auto",
+        "text-ignore-placement": false,
+        "text-allow-overlap": false,
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-halo-color": [
+          "case",
+          ["boolean", ["feature-state", "highlight"], false],
+          "yellow",
+          "white"
+        ],
+        "text-color": [
+          "match",
+          ["get", "category"],
+          "Violation",
+          "#228c22",
+          "#1f78b4"
+        ],
+        "text-halo-width": 2,
+        "text-halo-blur": 1.5
+      }
+    }
+  ],
+  "symbol-z-order": "source",
+  "id": "satellite",
+  "owner": "Jeffrey"
+}

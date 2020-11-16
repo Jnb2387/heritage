@@ -22,7 +22,10 @@ const defaultStyles = [
 const customlayers = [
   "heritage_address_num",
   "heritage_parcels_fill",
-  "heritage_parcels_line"
+  "heritage_parcels_line",
+  "heritage_buildings-3d",
+  "points",
+  "points_label"
 ];
 
 export default class StylesControl {

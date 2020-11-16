@@ -3,10 +3,11 @@
     <div id="map"></div>
     <!-- <Legend /> -->
     <LayerToggle @toggle-layer="layertoggle" />
+    <InsertPointMenu />
   </v-card>
 </template>
 <script>
-// import { mapFields } from "vuex-map-fields";
+import { mapFields } from "vuex-map-fields";
 import mapboxgl from "mapbox-gl";
 import "../../node_modules/mapbox-gl/dist/mapbox-gl.css";
 import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
@@ -17,12 +18,14 @@ import BaseButton from "../js/mapControlBaseButton";
 
 // import Legend from "./Legend";
 import LayerToggle from "./LayerToggle";
+import InsertPointMenu from "./InsertPointMenu";
 
 export default {
   name: "MapComponent",
   components: {
     // Legend,
-    LayerToggle
+    LayerToggle,
+    InsertPointMenu
   },
   data() {
     return {
@@ -37,13 +40,13 @@ export default {
         container: "map",
         style: RegularStyle,
         center: [-104.90903, 39.59884],
-        zoom: 11,
+        zoom: 15.5,
         maxBounds: [
           [-104.92337547, 39.59166919], // Southwest coordinates,
           [-104.89571004, 39.60577479] // Northeast coordinates
         ],
         minZoom: 15.5,
-        hash: true
+        hash: process.env.NODE_ENV !== "production" ? true : false
       }));
       //prettier-ignore
       const heritagebbox = [-104.92337547, 39.59166919, -104.89571004, 39.60577479];
@@ -73,29 +76,45 @@ export default {
       map.addControl(geolocate);
 
       map.on("load", function() {}); //End Map Load
-
+      map.on("styledata", () => {
+        this.map.getSource("points").setData(this.points);
+      });
       // Create a popup, but don't add it to the map yet.
       let popup = new mapboxgl.Popup({
         closeOnClick: false
       });
 
-      //Clear all highlights
-      map.on("click", function() {
+      //custom function to remove the state from an number of layers
+      const removeFeatureState = function(...layers) {
         map.removeFeatureState({
-          source: "heritage_data",
-          sourceLayer: "heritage_parcels"
+          source: "points"
         });
-        map.removeFeatureState({
-          source: "heritage_data",
-          sourceLayer: "heritage_buildings"
+        layers.forEach(layer => {
+          map.removeFeatureState({
+            source: "heritage_data",
+            sourceLayer: layer
+          });
+        });
+      };
+
+      //Show that these layers are clickable by adding a pointer
+      ["heritage_parcels_fill", "heritage_buildings"].forEach(layer => {
+        map.on("mouseover", layer, function() {
+          map.getCanvas().style.cursor = "pointer";
+        });
+        map.on("mouseleave", layer, function() {
+          map.getCanvas().style.cursor = "";
         });
       });
 
+      //Clear all highlights when the map is clicked anywhere (will be superceded by a click on a named layer)
+      map.on("click", function() {
+        removeFeatureState("heritage_buildings", "heritage_parcels");
+      });
+
+      //
       map.on("click", "heritage_parcels_fill", function(e) {
-        map.removeFeatureState({
-          source: "heritage_data",
-          sourceLayer: "heritage_parcels"
-        });
+        removeFeatureState("heritage_buildings", "heritage_parcels");
         map.setFeatureState(
           {
             source: "heritage_data",
@@ -104,15 +123,28 @@ export default {
           },
           { highlight: true }
         );
+        let coordinates = e.lngLat;
+        let description = `
+           <h2 style="background-color:black; color:white;text-align:center; margin:0; padding:4px;"><b> ${e.features[0].properties.owner}</b></h2>
+           <p>${e.features[0].properties.address}</p>
+           ${e.features[0].properties.link}
+           `;
+        // prettier-ignore
+        // let description2 =
+        // "<h3>"+properties.School+"</h3>"+
+        // "<p>"+properties['Address']+". <a target='_blank' href='https://www.google.com/maps/dir/?api=1&destination="+properties['Address']+".,Denver,CO'> Directions</a></p>"+
+        // "<p><b>Grades Served: </b>" + properties['Grades Served'] + "</p>"+
+        // "<p><b>Programs Offered: </b>" + properties['Programs Offered'] + "</p>"+
+
+        // "<p><b>Phone: </b>" + properties['Phone'] + "</p>"
+        popup
+          .setLngLat(coordinates)
+          .setHTML(description)
+          .addTo(map);
       });
 
-      //Remove old Centerprogram name highlight
-      map.on("mouseover", "heritage_buildings", function(e) {
-        map.removeFeatureState({
-          source: "heritage_data",
-          sourceLayer: "heritage_buildings"
-        });
-        //Set the highlight to the feature id which is the objectid in the database.(for now as along as its order by)
+      map.on("click", "heritage_buildings-3d", e => {
+        removeFeatureState("heritage_buildings", "heritage_parcels");
         map.setFeatureState(
           {
             source: "heritage_data",
@@ -121,17 +153,11 @@ export default {
           },
           { highlight: true }
         );
-      });
-      map.on("mouseleave", "heritage_buildings", function() {
-        map.removeFeatureState({
-          source: "heritage_data",
-          sourceLayer: "heritage_buildings"
-        });
-      });
-      // Show Popup on Hover for Food Sites
-      map.on("click", "heritage_buildings", function(e) {
-        map.getCanvas().style.cursor = "pointer";
         let coordinates = e.lngLat;
+        map.jumpTo({
+          center: coordinates,
+          zoom: 17.5
+        });
         let description = `
            <h2 style="background-color:black; color:white;text-align:center; margin:0; padding:4px;"><b> ${e.features[0].properties.owner}</b></h2>
            <b>Year Built:</b> ${e.features[0].properties.year_build}`;
@@ -140,12 +166,44 @@ export default {
           .setHTML(description)
           .addTo(map);
       });
-
-      //Remove Popup when mouseleaves a Food Sites
-      map.on("mouseleave", "heritage_buildings", function() {
-        map.getCanvas().style.cursor = "";
-        popup.remove();
+      ["points"].forEach(layer => {
+        map.on("click", layer, e => {
+          removeFeatureState("heritage_buildings", "heritage_parcels");
+          map.setFeatureState(
+            {
+              source: "points",
+              id: e.features[0].id
+            },
+            { highlight: true }
+          );
+          let coordinates = e.lngLat;
+          map.jumpTo({
+            center: coordinates,
+            zoom: 17.5
+          });
+          let description = `
+           <h2><b> ${e.features[0].properties.fulladdress}</b></h2>
+           <p>Category:  ${e.features[0].properties.category}</p>`;
+          popup
+            .setLngLat(coordinates)
+            .setHTML(description)
+            .addTo(map);
+        });
       });
+
+      //Add New Point
+      var marker = new mapboxgl.Marker({
+        draggable: true
+      })
+        .setLngLat([-104.90903, 39.59884])
+        .addTo(map);
+
+      let onDragEnd = () => {
+        let lngLat = marker.getLngLat();
+        this.markercoords = lngLat.lng.toString() + "," + lngLat.lat.toString();
+      };
+
+      marker.on("dragend", onDragEnd);
     }, //End initMap;
 
     //Emit Function from LayerToggle component
@@ -160,10 +218,15 @@ export default {
       });
     }
   },
-  computed: {},
-  watch: {},
+  computed: { ...mapFields(["points", "markercoords"]) },
+  watch: {
+    points(newValue) {
+      this.map.getSource("points").setData(newValue);
+    }
+  },
   mounted: function() {
     this.initMap();
+    this.$store.dispatch("getPoints");
   }
 };
 </script>
@@ -174,7 +237,23 @@ export default {
 }
 
 .mapboxgl-popup {
-  max-width: 600px !important;
+  -webkit-font-smoothing: antialiased;
+  max-width: 75% !important;
+  font: 12px/20px "Helvetica Neue", Arial, Helvetica, sans-serif;
+  color: #5a5a59;
+}
+
+.mapboxgl-popup h3 {
+  font-family: "Roboto Slab", serif;
+  font-weight: 400;
+  color: #005073;
+  font-size: 16px !important;
+  margin: 0px 0 5px 0 !important;
+}
+
+.mapboxgl-popup p {
+  margin-bottom: 0px;
+  -webkit-font-smoothing: antialiased;
 }
 
 .mapboxgl-popup-close-button {
@@ -191,5 +270,9 @@ export default {
   padding: 0px;
   color: white;
   text-align: center;
+}
+
+.mapboxgl-popup-close-button:hover {
+  color: black;
 }
 </style>

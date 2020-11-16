@@ -1,7 +1,7 @@
 <template>
   <v-card class="mx-auto style-overlay ml-1 px-2 mt-1" min-width="120">
     <v-card-title class="px-0 py-0 justify-center subtitle-2 font-weight-bold"
-      >Show Layers</v-card-title
+      >Layers</v-card-title
     >
     <v-tooltip bottom>
       <template v-slot:activator="{ on }">
@@ -12,7 +12,10 @@
             class="mb-1"
             :color="building_button ? 'success' : ''"
             @click="
-              toggleBaseLayers(['buildings']);
+              toggleBaseLayers([
+                'heritage_buildings-3d',
+                'heritage_address_num'
+              ]);
               building_button = !building_button;
             "
             >Buildings</v-btn
@@ -23,10 +26,13 @@
             class="mb-1"
             :color="parcel_button ? 'success' : ''"
             @click="
-              toggleBaseLayers(['parcels']);
+              toggleBaseLayers([
+                'heritage_parcels_fill',
+                'heritage_parcels_line'
+              ]);
               parcel_button = !parcel_button;
             "
-            >CCD Parcels</v-btn
+            >Parcels</v-btn
           >
         </div>
       </template>
