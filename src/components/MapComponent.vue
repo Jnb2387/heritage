@@ -154,10 +154,10 @@ export default {
           { highlight: true }
         );
         let coordinates = e.lngLat;
-        map.jumpTo({
-          center: coordinates,
-          zoom: 17.5
-        });
+        // map.jumpTo({
+        //   center: coordinates,
+        //   zoom: 17.5
+        // });
         let description = `
            <h2 style="background-color:black; color:white;text-align:center; margin:0; padding:4px;"><b> ${e.features[0].properties.owner}</b></h2>
            <b>Year Built:</b> ${e.features[0].properties.year_build}`;
@@ -177,10 +177,10 @@ export default {
             { highlight: true }
           );
           let coordinates = e.lngLat;
-          map.jumpTo({
-            center: coordinates,
-            zoom: 17.5
-          });
+          // map.jumpTo({
+          //   center: coordinates,
+          //   zoom: 17.5
+          // });
           let description = `
            <h2><b> ${e.features[0].properties.fulladdress}</b></h2>
            <p>Category:  ${e.features[0].properties.category}</p>`;
@@ -233,7 +233,7 @@ export default {
 
 <style>
 #map {
-  min-height: 96vh;
+  min-height: 100vh;
 }
 
 .mapboxgl-popup {

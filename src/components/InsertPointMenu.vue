@@ -121,7 +121,7 @@ export default {
 .style-overlay {
   z-index: 1;
   position: absolute;
-  bottom: 5px;
+  bottom: 20px;
   right: 5px;
 }
 </style>

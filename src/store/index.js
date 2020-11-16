@@ -8,7 +8,7 @@ export default new Vuex.Store({
   strict: process.env.NODE_ENV !== "production",
   state: {
     points: null,
-    markercoords: null,
+    markercoords: "-104.9041751,39.5950731",
     building_button: true,
     parcel_button: true
   },
@@ -20,9 +20,6 @@ export default new Vuex.Store({
     SET_POINTS(state, points) {
       state.points = points;
     }
-    // INSERT_POINT(state, points) {
-    //   state.points = points;
-    // }
   },
   actions: {
     async insertPoint({ dispatch }, data) {
