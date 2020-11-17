@@ -42,10 +42,10 @@ export default {
         center: [-104.90903, 39.59884],
         zoom: 15.5,
         maxBounds: [
-          [-104.92337547, 39.59166919], // Southwest coordinates,
-          [-104.89571004, 39.60577479] // Northeast coordinates
+          [-104.9337547, 39.58166919], // Southwest coordinates,
+          [-104.89171004, 39.61577479] // Northeast coordinates
         ],
-        minZoom: 15.5,
+        minZoom: 15,
         hash: process.env.NODE_ENV !== "production" ? true : false
       }));
       //prettier-ignore
@@ -166,31 +166,41 @@ export default {
           .setHTML(description)
           .addTo(map);
       });
+
       ["points"].forEach(layer => {
         map.on("click", layer, e => {
+          const pointdata = e.features[0];
           removeFeatureState("heritage_buildings", "heritage_parcels");
           map.setFeatureState(
             {
               source: "points",
-              id: e.features[0].id
+              id: pointdata.id
             },
             { highlight: true }
           );
-          let coordinates = e.lngLat;
-          // map.jumpTo({
-          //   center: coordinates,
-          //   zoom: 17.5
-          // });
-          let description = `
-           <h2><b> ${e.features[0].properties.fulladdress}</b></h2>
-           <p>Category:  ${e.features[0].properties.category}</p>`;
-          popup
-            .setLngLat(coordinates)
-            .setHTML(description)
-            .addTo(map);
+
+          const divElement = document.createElement("div");
+          const innerHtmlContent = `
+            <div style="">
+              <h4 class="">${pointdata.properties.location} </h4>
+              <p>Category:  ${pointdata.properties.category}</p>
+            </div>`;
+          divElement.innerHTML = innerHtmlContent;
+
+          const assignBtn = document.createElement("div");
+          assignBtn.innerHTML = `<button class="btn">Edit</button>`;
+          assignBtn.addEventListener("click", () => {
+            this.id = pointdata.properties.id;
+            this.location = pointdata.properties.location;
+            this.category = pointdata.properties.category;
+            (this.note = pointdata.properties.note),
+              (this.geom = pointdata.geometry.coordinates.toString());
+            this.menu = true;
+          });
+          divElement.appendChild(assignBtn);
+          popup.setDOMContent(divElement);
         });
       });
-
       //Add New Point
       var marker = new mapboxgl.Marker({
         draggable: true
@@ -200,7 +210,7 @@ export default {
 
       let onDragEnd = () => {
         let lngLat = marker.getLngLat();
-        this.markercoords = lngLat.lng.toString() + "," + lngLat.lat.toString();
+        this.geom = lngLat.lng.toString() + "," + lngLat.lat.toString();
       };
 
       marker.on("dragend", onDragEnd);
@@ -218,7 +228,17 @@ export default {
       });
     }
   },
-  computed: { ...mapFields(["points", "markercoords"]) },
+  computed: {
+    ...mapFields([
+      "points",
+      "menu",
+      "editedItem.id",
+      "editedItem.location",
+      "editedItem.category",
+      "editedItem.note",
+      "editedItem.geom"
+    ])
+  },
   watch: {
     points(newValue) {
       this.map.getSource("points").setData(newValue);
@@ -233,7 +253,7 @@ export default {
 
 <style>
 #map {
-  min-height: 100vh;
+  min-height: 90vh;
 }
 
 .mapboxgl-popup {
@@ -241,19 +261,6 @@ export default {
   max-width: 75% !important;
   font: 12px/20px "Helvetica Neue", Arial, Helvetica, sans-serif;
   color: #5a5a59;
-}
-
-.mapboxgl-popup h3 {
-  font-family: "Roboto Slab", serif;
-  font-weight: 400;
-  color: #005073;
-  font-size: 16px !important;
-  margin: 0px 0 5px 0 !important;
-}
-
-.mapboxgl-popup p {
-  margin-bottom: 0px;
-  -webkit-font-smoothing: antialiased;
 }
 
 .mapboxgl-popup-close-button {
@@ -274,5 +281,23 @@ export default {
 
 .mapboxgl-popup-close-button:hover {
   color: black;
+}
+
+.btn {
+  display: inline-block;
+  text-align: center;
+  text-decoration: none;
+  margin: 2px 0;
+  border: solid 1px transparent;
+  border-radius: 4px;
+  padding: 0.1em 0.2em;
+  color: #ffffff;
+  background-color: #9555af;
+}
+/* inverse colors on mouse-over */
+.btn:hover {
+  color: #9555af;
+  border-color: currentColor;
+  background-color: white;
 }
 </style>

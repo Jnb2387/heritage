@@ -8,7 +8,18 @@ export default new Vuex.Store({
   strict: process.env.NODE_ENV !== "production",
   state: {
     points: null,
+
+    //
     markercoords: "-104.9041751,39.5950731",
+    menu: false,
+    editedItem: {
+      id: null,
+      location: null,
+      category: null,
+      note: "",
+      geom: null
+    },
+    //Layer buttons
     building_button: true,
     parcel_button: true
   },
@@ -25,12 +36,13 @@ export default new Vuex.Store({
     async insertPoint({ dispatch }, data) {
       try {
         console.log(data);
-        await axios.post("https://postgis-api.herokuapp.com/v1/insert_point/", {
-          // await axios.post("http://localhost:3000/v1/insert_point/", {
-          category: data.category,
-          note: data.note,
-          geom: data.geom
-        });
+        await axios.post(
+          "https://postgis-api.herokuapp.com/v1/insert_point/",
+          data
+        );
+        // await axios.post("http://localhost:3000/v1/insert_point/",
+        // data
+        // );
         await dispatch("getPoints");
       } catch (error) {
         alert(error);
@@ -39,7 +51,7 @@ export default new Vuex.Store({
     getPoints({ commit }) {
       axios
         .get(
-          "https://postgis-api.herokuapp.com/v1/geojson/heritage.points?geom_column=geom&columns=id%2Cfulladdress%2Cnote%2Ccategory"
+          "https://postgis-api.herokuapp.com/v1/geojson/heritage.points?geom_column=geom&columns=id%2Clocation%2Cnote%2Ccategory"
         )
         .then(response => {
           commit("SET_POINTS", response.data);
