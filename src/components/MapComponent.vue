@@ -16,6 +16,7 @@ const MapboxGeocoder = require("@mapbox/mapbox-gl-geocoder");
 import RegularStyle from "../../data/heritage_style.json";
 
 import BaseButton from "../js/mapControlBaseButton";
+import FullExtentControl from "../js/mapControlFullextent";
 
 // import Legend from "./Legend";
 import LayerToggle from "./LayerToggle";
@@ -54,10 +55,10 @@ export default {
         style: RegularStyle,
         center: [-104.90903, 39.59884],
         zoom: 15.5,
-        maxBounds: [
-          [-104.9337547, 39.58166919], // Southwest coordinates,
-          [-104.89171004, 39.61577479] // Northeast coordinates
-        ],
+        // maxBounds: [
+        //   [-104.9337547, 39.58166919], // Southwest coordinates,
+        //   [-104.89171004, 39.61577479] // Northeast coordinates
+        // ],
         minZoom: 15,
         hash: process.env.NODE_ENV !== "production" ? true : false
       }));
@@ -75,6 +76,8 @@ export default {
       map.addControl(new mapboxgl.NavigationControl(), "top-right");
       //Sat Button
       map.addControl(new BaseButton());
+      //Zoom to Full Extent of Heritage
+      map.addControl(new FullExtentControl({ bbox: heritagebbox }));
 
       // Add geolocate control to the map.
       map.addControl(this.geolocate);
@@ -319,5 +322,12 @@ export default {
   color: #9555af;
   border-color: currentColor;
   background-color: white;
+}
+
+.mapboxgl-ctrl-fullextent {
+  background: url("../assets/heritage_boundary.svg");
+  background-size: 28px 28px;
+  background-repeat: no-repeat;
+  background-position: center center;
 }
 </style>
