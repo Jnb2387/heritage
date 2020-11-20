@@ -1,23 +1,4 @@
-// <!-- Basemap -->
-//           <v-card-title
-//             class="px-0 py-0 justify-center caption font-weight-bold"
-//             >Basemap</v-card-title
-//           >
-//           <v-row align="center" justify="center">
-//             <v-btn-toggle v-model="basemap_toggle" mandatory>
-//               <v-btn
-//                 v-for="style in defaultStyles"
-//                 :key="style.label"
-//                 x-small
-//                 class=""
-//                 @click="toggleBaseStyle(style.styleUrl)"
-//                 >{{ style.label }}</v-btn
-//               >
-//             </v-btn-toggle>
-//           </v-row>
-
 import SatelliteStyle from "../../data/heritage_satellite_style.json";
-
 import RegularStyle from "../../data/heritage_style.json";
 
 const defaultStyles = [
@@ -53,8 +34,8 @@ export default class StylesControl {
 
   insertControls() {
     this.container = document.createElement("div");
-    // this.container.classList.add("mapboxgl-ctrl");
-    // this.container.classList.add("mapboxgl-ctrl-group");
+    this.container.classList.add("mapboxgl-ctrl");
+    this.container.classList.add("mapboxgl-ctrl-group");
     this.styles.forEach(style => {
       const node = document.createElement("button");
       node.setAttribute("type", "button");
@@ -80,9 +61,9 @@ export default class StylesControl {
           );
         });
       });
-      // this.container.appendChild(node);
+      this.container.appendChild(node);
       // this.container.append(node);
-      document.querySelector(".layermenuclass").appendChild(node);
+      // document.querySelector(".layermenuclass").appendChild(node);
     });
   }
 

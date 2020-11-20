@@ -24,7 +24,7 @@
                 mdi-checkbox-marked-circle
               </v-icon>
             </v-btn>
-            <v-btn @click="usermarker=true;" class="ma-2" color="primary" dark>
+            <v-btn @click="usermarker = true" class="ma-2" color="primary" dark>
               Add Marker
               <v-icon dark right>
                 mdi-checkbox-marked-circle
@@ -32,11 +32,7 @@
             </v-btn>
           </v-card-title>
           <v-card-text class="pb-2">
-            <v-text-field
-              v-model="location"
-              label="General Location"
-              outlined
-            >
+            <v-text-field v-model="location" label="General Location" outlined>
             </v-text-field>
             <v-select
               v-model="category"
@@ -102,7 +98,7 @@ export default {
       this.$refs.form.reset();
       this.clickPointID = null;
       this.menu = false;
-      this.usermarker= false;
+      this.usermarker = false;
     },
     insertPoint: function() {
       let data = {
@@ -125,8 +121,7 @@ export default {
       this.resetForm();
     },
     deletePoint: function() {
-    if(confirm('are you sure?'))
-      this.$store.dispatch("deletePoint");
+      if (confirm("are you sure?")) this.$store.dispatch("deletePoint");
       this.resetForm();
     }
   }

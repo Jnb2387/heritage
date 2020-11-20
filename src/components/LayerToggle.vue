@@ -59,7 +59,6 @@
             "
             >Points</v-btn
           >
-          
         </div>
       </v-card>
     </v-menu>
