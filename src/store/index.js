@@ -50,8 +50,9 @@ export default new Vuex.Store({
           "https://postgis-api.herokuapp.com/v1/insert_point/",
           data
         );
-        console.log(response.data);
-        await dispatch("getPoints");
+        if (response.data) {
+          await dispatch("getPoints");
+        }
       } catch (error) {
         alert(error);
       }

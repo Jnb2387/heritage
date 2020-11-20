@@ -33,6 +33,15 @@ export default {
       map: {},
       marker: new mapboxgl.Marker({
         draggable: true
+      }),
+      geolocate: new mapboxgl.GeolocateControl({
+        positionOptions: {
+          enableHighAccuracy: true
+        },
+        fitBoundsOptions: {
+          maxZoom: 16.7
+        },
+        trackUserLocation: true
       })
     };
   },
@@ -68,16 +77,7 @@ export default {
       map.addControl(new BaseButton());
 
       // Add geolocate control to the map.
-      let geolocate = new mapboxgl.GeolocateControl({
-        positionOptions: {
-          enableHighAccuracy: true
-        },
-        fitBoundsOptions: {
-          maxZoom: 16.7
-        },
-        trackUserLocation: true
-      });
-      map.addControl(geolocate);
+      map.addControl(this.geolocate);
 
       map.on("load", function() {}); //End Map Load
       map.on("styledata", () => {
@@ -240,13 +240,21 @@ export default {
     },
     usermarker(newValue) {
       //Add New Point
-
-      console.log(newValue);
       if (!newValue) {
         this.marker.remove();
         return;
       }
-      this.marker.setLngLat([-104.90903, 39.59884]).addTo(this.map);
+      if (newValue === "gps") {
+        this.geolocate.trigger();
+        this.geolocate.on("geolocate", function(e) {
+          this.geom =
+            e.coords.longitude.toString() + "," + e.coords.latitude.toString();
+          console.log(this.geom);
+        });
+        return;
+      }
+      let center = this.map.getCenter();
+      this.marker.setLngLat([center.lng, center.lat]).addTo(this.map);
 
       let onDragEnd = () => {
         let lngLat = this.marker.getLngLat();

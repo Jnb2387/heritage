@@ -8,8 +8,10 @@
       :close-on-click="false"
     >
       <template v-slot:activator="{ on, attrs }">
-        <v-btn color="indigo" dark v-bind="attrs" v-on="on">
-          Add Point
+        <v-btn color="indigo" dark small v-bind="attrs" class="" v-on="on">
+          <v-icon dark>
+            mdi-map-marker-plus
+          </v-icon>
         </v-btn>
       </template>
 
@@ -18,17 +20,17 @@
           <v-card-title
             >{{ clickPointID ? "Update" : "Add" }} {{ category }} Point
             <v-spacer></v-spacer>
-            <v-btn class="ma-2" color="primary" dark>
-              GPS
-              <v-icon dark right>
-                mdi-checkbox-marked-circle
-              </v-icon>
+            <v-btn
+              small
+              @click="usermarker = 'gps'"
+              class="ma-2"
+              color="primary"
+              dark
+            >
+              Use GPS
             </v-btn>
-            <v-btn @click="usermarker = true" class="ma-2" color="primary" dark>
-              Add Marker
-              <v-icon dark right>
-                mdi-checkbox-marked-circle
-              </v-icon>
+            <v-btn small @click="usermarker = true" color="primary" dark>
+              Drag Marker
             </v-btn>
           </v-card-title>
           <v-card-text class="pb-2">
@@ -52,25 +54,22 @@
               auto-grow
             ></v-textarea>
           </v-card-text>
-          <v-card-actions>
+          <v-card-actions class="justify-space-between">
             <v-btn text @click="resetForm()">
               Cancel
             </v-btn>
-            <v-spacer></v-spacer>
             <div v-if="clickPointID">
-              <small>ID:{{ clickPointID }}</small>
               <v-icon small @click="deletePoint()">
                 mdi-delete
               </v-icon>
-              <v-btn color="error" text @click="updatePoint()">
-                Update
-              </v-btn>
             </div>
-            <div v-else>
-              <v-btn color="primary" text @click="insertPoint()">
-                Submit
-              </v-btn>
-            </div>
+            <v-btn
+              :color="clickPointID ? 'success' : 'primary'"
+              text
+              @click="handlePointData()"
+            >
+              {{ clickPointID ? "Update" : "Insert" }}
+            </v-btn>
           </v-card-actions>
         </v-form>
       </v-card>
@@ -96,28 +95,22 @@ export default {
   methods: {
     resetForm() {
       this.$refs.form.reset();
-      this.clickPointID = null;
       this.menu = false;
       this.usermarker = false;
+      this.clickPointID = null;
     },
-    insertPoint: function() {
+    handlePointData: function() {
       let data = {
         location: this.location,
         category: this.category,
         note: this.note,
         geom: this.geom
       };
-      this.$store.dispatch("insertPoint", data);
-      this.resetForm();
-    },
-    updatePoint: function() {
-      let data = {
-        location: this.location,
-        category: this.category,
-        note: this.note,
-        geom: this.geom
-      };
-      this.$store.dispatch("updatePoint", data);
+      //If the clickPointID has a value then Updating point if not then Inserting
+      this.$store.dispatch(
+        !this.clickPointID ? "insertPoint" : "updatePoint",
+        data
+      );
       this.resetForm();
     },
     deletePoint: function() {
