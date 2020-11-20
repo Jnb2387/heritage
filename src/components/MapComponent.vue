@@ -14,6 +14,7 @@ import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
 const MapboxGeocoder = require("@mapbox/mapbox-gl-geocoder");
 
 import RegularStyle from "../../data/heritage_style.json";
+
 import BaseButton from "../js/mapControlBaseButton";
 
 // import Legend from "./Legend";
@@ -29,7 +30,10 @@ export default {
   },
   data() {
     return {
-      map: {}
+      map: {},
+      marker: new mapboxgl.Marker({
+        draggable: true
+      })
     };
   },
   methods: {
@@ -178,7 +182,7 @@ export default {
             },
             { highlight: true }
           );
-
+          let coordinates = e.lngLat;
           const divElement = document.createElement("div");
           const innerHtmlContent = `
             <div style="">
@@ -190,7 +194,7 @@ export default {
           const assignBtn = document.createElement("div");
           assignBtn.innerHTML = `<button class="btn">Edit</button>`;
           assignBtn.addEventListener("click", () => {
-            this.id = pointdata.properties.id;
+            this.clickPointID = pointdata.properties.id;
             this.location = pointdata.properties.location;
             this.category = pointdata.properties.category;
             (this.note = pointdata.properties.note),
@@ -198,22 +202,12 @@ export default {
             this.menu = true;
           });
           divElement.appendChild(assignBtn);
-          popup.setDOMContent(divElement);
+          popup
+            .setLngLat(coordinates)
+            .setDOMContent(divElement)
+            .addTo(map);
         });
       });
-      //Add New Point
-      var marker = new mapboxgl.Marker({
-        draggable: true
-      })
-        .setLngLat([-104.90903, 39.59884])
-        .addTo(map);
-
-      let onDragEnd = () => {
-        let lngLat = marker.getLngLat();
-        this.geom = lngLat.lng.toString() + "," + lngLat.lat.toString();
-      };
-
-      marker.on("dragend", onDragEnd);
     }, //End initMap;
 
     //Emit Function from LayerToggle component
@@ -232,7 +226,8 @@ export default {
     ...mapFields([
       "points",
       "menu",
-      "editedItem.id",
+      "clickPointID",
+      "usermarker",
       "editedItem.location",
       "editedItem.category",
       "editedItem.note",
@@ -242,6 +237,23 @@ export default {
   watch: {
     points(newValue) {
       this.map.getSource("points").setData(newValue);
+    },
+    usermarker(newValue) {
+      //Add New Point
+
+      console.log(newValue);
+      if (!newValue) {
+        this.marker.remove();
+        return;
+      }
+      this.marker.setLngLat([-104.90903, 39.59884]).addTo(this.map);
+
+      let onDragEnd = () => {
+        let lngLat = this.marker.getLngLat();
+        this.geom = lngLat.lng.toString() + "," + lngLat.lat.toString();
+      };
+
+      this.marker.on("dragend", onDragEnd);
     }
   },
   mounted: function() {

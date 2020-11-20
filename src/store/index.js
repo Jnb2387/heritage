@@ -12,8 +12,9 @@ export default new Vuex.Store({
     //
     markercoords: "-104.9041751,39.5950731",
     menu: false,
+    usermarker: false,
+    clickPointID: null,
     editedItem: {
-      id: null,
       location: null,
       category: null,
       note: "",
@@ -21,7 +22,8 @@ export default new Vuex.Store({
     },
     //Layer buttons
     building_button: true,
-    parcel_button: true
+    parcel_button: true,
+    point_button: true
   },
   getters: {
     getField
@@ -33,21 +35,6 @@ export default new Vuex.Store({
     }
   },
   actions: {
-    async insertPoint({ dispatch }, data) {
-      try {
-        console.log(data);
-        await axios.post(
-          "https://postgis-api.herokuapp.com/v1/insert_point/",
-          data
-        );
-        // await axios.post("http://localhost:3000/v1/insert_point/",
-        // data
-        // );
-        await dispatch("getPoints");
-      } catch (error) {
-        alert(error);
-      }
-    },
     getPoints({ commit }) {
       axios
         .get(
@@ -56,6 +43,42 @@ export default new Vuex.Store({
         .then(response => {
           commit("SET_POINTS", response.data);
         });
+    },
+    async insertPoint({ dispatch }, data) {
+      try {
+        const response = await axios.post(
+          "https://postgis-api.herokuapp.com/v1/insert_point/",
+          data
+        );
+        console.log(response.data);
+        await dispatch("getPoints");
+      } catch (error) {
+        alert(error);
+      }
+    },
+    async updatePoint({ dispatch, state }, data) {
+      console.log(data);
+      try {
+        await axios.put(
+          "https://postgis-api.herokuapp.com/v1/update_point/" +
+            state.clickPointID,
+          data
+        );
+        await dispatch("getPoints");
+      } catch (error) {
+        alert(error);
+      }
+    },
+    async deletePoint({ dispatch, state }) {
+      try {
+        await axios.post(
+          "https://postgis-api.herokuapp.com/v1/delete_point/" +
+            state.clickPointID
+        );
+        await dispatch("getPoints");
+      } catch (error) {
+        alert(error);
+      }
     }
   },
   modules: {}

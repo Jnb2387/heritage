@@ -16,13 +16,24 @@
       <v-card>
         <v-form ref="form">
           <v-card-title
-            >Add {{ category }} Point <v-spacer></v-spacer>
-            <div v-if="id">ID:{{ id }}</div>
+            >{{ clickPointID ? "Update" : "Add" }} {{ category }} Point
+            <v-spacer></v-spacer>
+            <v-btn class="ma-2" color="primary" dark>
+              GPS
+              <v-icon dark right>
+                mdi-checkbox-marked-circle
+              </v-icon>
+            </v-btn>
+            <v-btn @click="usermarker=true;" class="ma-2" color="primary" dark>
+              Add Marker
+              <v-icon dark right>
+                mdi-checkbox-marked-circle
+              </v-icon>
+            </v-btn>
           </v-card-title>
           <v-card-text class="pb-2">
             <v-text-field
               v-model="location"
-              prepend-icon="mdi-map"
               label="General Location"
               outlined
             >
@@ -50,9 +61,20 @@
               Cancel
             </v-btn>
             <v-spacer></v-spacer>
-            <v-btn color="primary" text @click="insertPoint">
-              Submit
-            </v-btn>
+            <div v-if="clickPointID">
+              <small>ID:{{ clickPointID }}</small>
+              <v-icon small @click="deletePoint()">
+                mdi-delete
+              </v-icon>
+              <v-btn color="error" text @click="updatePoint()">
+                Update
+              </v-btn>
+            </div>
+            <div v-else>
+              <v-btn color="primary" text @click="insertPoint()">
+                Submit
+              </v-btn>
+            </div>
           </v-card-actions>
         </v-form>
       </v-card>
@@ -67,7 +89,8 @@ export default {
   computed: {
     ...mapFields([
       "menu",
-      "editedItem.id",
+      "clickPointID",
+      "usermarker",
       "editedItem.location",
       "editedItem.category",
       "editedItem.note",
@@ -77,19 +100,33 @@ export default {
   methods: {
     resetForm() {
       this.$refs.form.reset();
-      this.id = null;
+      this.clickPointID = null;
       this.menu = false;
+      this.usermarker= false;
     },
     insertPoint: function() {
       let data = {
-        id: this.id,
         location: this.location,
         category: this.category,
         note: this.note,
         geom: this.geom
       };
-      console.log(this.id);
       this.$store.dispatch("insertPoint", data);
+      this.resetForm();
+    },
+    updatePoint: function() {
+      let data = {
+        location: this.location,
+        category: this.category,
+        note: this.note,
+        geom: this.geom
+      };
+      this.$store.dispatch("updatePoint", data);
+      this.resetForm();
+    },
+    deletePoint: function() {
+    if(confirm('are you sure?'))
+      this.$store.dispatch("deletePoint");
       this.resetForm();
     }
   }

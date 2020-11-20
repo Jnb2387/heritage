@@ -1,11 +1,25 @@
 <template>
-  <v-card class="mx-auto style-overlay ml-1 px-2 mt-1" min-width="120">
-    <v-card-title class="px-0 py-0 justify-center subtitle-2 font-weight-bold"
-      >Layers</v-card-title
+  <div class="text-center style-overlay">
+    <v-menu
+      v-model="layermenu"
+      :nudge-width="100"
+      offset-x
+      class=""
+      content-class="layermenuclass"
+      :close-on-content-click="false"
     >
-    <v-tooltip bottom>
-      <template v-slot:activator="{ on }">
-        <div v-on="on">
+      <template v-slot:activator="{ on, attrs }">
+        <v-btn fab x-small v-bind="attrs" v-on="on">
+          <v-icon>
+            mdi-layers
+          </v-icon>
+        </v-btn>
+      </template>
+      <v-card class="px-1 pb-1">
+        <v-card-title class="px-0 py-0 justify-center caption font-weight-bold"
+          >Layers</v-card-title
+        >
+        <div>
           <v-btn
             x-small
             block
@@ -34,21 +48,35 @@
             "
             >Parcels</v-btn
           >
+          <v-btn
+            x-small
+            block
+            class=""
+            :color="point_button ? 'success' : ''"
+            @click="
+              toggleBaseLayers(['points', 'points_label']);
+              point_button = !point_button;
+            "
+            >Points</v-btn
+          >
+          
         </div>
-      </template>
-      <span>Click to Toggle Layer</span>
-    </v-tooltip>
-  </v-card>
+      </v-card>
+    </v-menu>
+  </div>
 </template>
 
 <script>
 import { mapFields } from "vuex-map-fields";
+
 export default {
   data() {
-    return {};
+    return {
+      layermenu: false
+    };
   },
   computed: {
-    ...mapFields(["building_button", "parcel_button"])
+    ...mapFields(["building_button", "parcel_button", "point_button"])
   },
   methods: {
     toggleBaseLayers: function(layer) {
@@ -63,12 +91,7 @@ export default {
 .style-overlay {
   z-index: 1;
   position: absolute;
-  padding: 0px 7px 0px 7px;
   top: 5px;
   left: 5px;
-  width: 155px;
-  background: rgba(255, 255, 255, 1);
-  margin-right: 10px;
-  border-radius: 5px;
 }
 </style>
